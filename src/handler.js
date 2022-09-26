@@ -17,6 +17,19 @@ const addBook = (request, h) => {
   const finished = readPage === pageCount;
   const insertAt = new Date().toISOString();
   const updateAt = insertAt;
+  const newBook = {
+    name,
+    year,
+    author,
+    summary,
+    publisher,
+    pageCount,
+    readPage,
+    reading,
+    finished,
+    updateAt,
+    id,
+  };
 
   if (!name) {
     const response = h.response({
@@ -38,20 +51,7 @@ const addBook = (request, h) => {
     return response;
   }
   try {
-    const book = {
-      name,
-      year,
-      author,
-      summary,
-      publisher,
-      pageCount,
-      readPage,
-      reading,
-      finished,
-      updateAt,
-    };
-
-    books.push(book);
+    books.push(newBook);
 
     const response = h.response({
       status: 'success',
@@ -77,22 +77,24 @@ const addBook = (request, h) => {
 };
 
 const getBooks = (request, h) => {
-  const { name, reading, finished } = request.params;
+  const { name = '', reading, finished } = request.query;
 
   let tempBooks = [...books];
 
-  if (name) {
+  if (name !== undefined) {
     tempBooks = tempBooks.filter((book) =>
-      book.name.includes(name.toLowerCase())
+      book.name.toLowerCase().includes(name.toLowerCase())
     );
   }
 
   if (reading !== undefined) {
-    tempBooks = tempBooks.filter((book) => book.reading === reading);
+    tempBooks = tempBooks.filter((book) => book.reading === Boolean(+reading));
   }
 
   if (finished !== undefined) {
-    tempBooks = tempBooks.filter((book) => book.finished === finished);
+    tempBooks = tempBooks.filter(
+      (book) => book.finished === Boolean(+finished)
+    );
   }
 
   const response = h.response({
@@ -102,14 +104,13 @@ const getBooks = (request, h) => {
     },
   });
 
-  response.status(200);
+  response.code(200);
 
   return response;
 };
 
 const getBookById = (request, h) => {
-  const { bookId } = request.payload;
-
+  const { bookId } = request.params;
   const index = books.findIndex((book) => book.id === bookId);
 
   if (index === -1) {
