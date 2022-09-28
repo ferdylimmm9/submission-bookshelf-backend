@@ -15,8 +15,8 @@ const addBook = (request, h) => {
 
   const id = nanoid(16);
   const finished = readPage === pageCount;
-  const insertAt = new Date().toISOString();
-  const updateAt = insertAt;
+  const insertedAt = new Date().toISOString();
+  const updatedAt = insertedAt;
   const newBook = {
     name,
     year,
@@ -27,7 +27,8 @@ const addBook = (request, h) => {
     readPage,
     reading,
     finished,
-    updateAt,
+    updatedAt,
+    insertedAt,
     id,
   };
 
@@ -95,6 +96,20 @@ const getBooks = (request, h) => {
     tempBooks = tempBooks.filter(
       (book) => book.finished === Boolean(+finished)
     );
+  }
+
+  if (name !== '' || reading !== undefined || finished !== undefined) {
+    tempBooks = tempBooks.map(({ name: nameBook, publisher, id }) => ({
+      id,
+      name: nameBook,
+      publisher,
+    }));
+  } else {
+    tempBooks = tempBooks.map(({ id, name: nameBook, publisher }) => ({
+      id,
+      name: nameBook,
+      publisher,
+    }));
   }
 
   const response = h.response({
